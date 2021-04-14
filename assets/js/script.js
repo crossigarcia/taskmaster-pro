@@ -46,21 +46,6 @@ var saveTasks = function() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 };
 
-$(".list-group").on("click", "p", function(){
-  var text = $(this)
-    .text()
-    .trim();
-
-  var textInput = $("<textarea>")
-    .addClass("form-control")
-    .val(text);
-
-  $(this).replaceWith(textInput);
-
-  textInput.trigger("focus");
-
-});
-
 var auditTask = function (taskEl) {
   //get date from task element
   var date = $(taskEl).find("span").text().trim();
@@ -79,6 +64,80 @@ var auditTask = function (taskEl) {
   }
 
 };
+
+$(".card .list-group").sortable({
+  connectWith: $(".card .list-group"),
+  scroll: false,
+  tolerance: "pointer",
+  helper: "clone",
+  activate: function (event) { },
+  deactivate: function (event) { },
+  over: function (event) { },
+  out: function (event) { },
+  update: function (event) {
+    // array to store the task data in
+    var tempArr = [];
+
+    // loop over current set of children in sortable list
+    $(this).children().each(function () {
+      var text = $(this)
+        .find("p")
+        .text()
+        .trim();
+
+      var date = $(this)
+        .find("span")
+        .text()
+        .trim();
+
+      // add task data to the temp array as an obj
+      tempArr.push({
+        text: text,
+        date: date
+      });
+    });
+
+    //trim down list's ID to match object property
+    var arrName = $(this)
+      .attr("id")
+      .replace("list-", "");
+
+    //update array on tasks object and save
+    tasks[arrName] = tempArr;
+    saveTasks();
+  }
+});
+
+$("#trash").droppable({
+  accept: ".card .list-group-item",
+  tolerance: "touch",
+  drop: function (event, ui) {
+    ui.draggable.remove();
+    console.log("over");
+  },
+  out: function (event, ui) {
+    console.log("out");
+  }
+});
+
+$("#modalDueDate").datepicker({
+  minDate: 1
+});
+
+$(".list-group").on("click", "p", function () {
+  var text = $(this)
+    .text()
+    .trim();
+
+  var textInput = $("<textarea>")
+    .addClass("form-control")
+    .val(text);
+
+  $(this).replaceWith(textInput);
+
+  textInput.trigger("focus");
+
+});
 
 $(".list-group").on("blur", "textarea", function () {
   var text = $(this)
@@ -213,61 +272,3 @@ $("#remove-tasks").on("click", function() {
 // load tasks for the first time
 loadTasks();
 
-$(".card .list-group").sortable({
-  connectWith: $(".card .list-group"),
-  scroll: false,
-  tolerance: "pointer",
-  helper: "clone",
-  activate: function (event) { },
-  deactivate: function (event) { },
-  over: function (event) { },
-  out: function (event) { },
-  update: function (event) {
-    // array to store the task data in
-    var tempArr = [];
-
-    // loop over current set of children in sortable list
-    $(this).children().each(function () {
-      var text = $(this)
-        .find("p")
-        .text()
-        .trim();
-
-      var date = $(this)
-        .find("span")
-        .text()
-        .trim();
-
-      // add task data to the temp array as an obj
-      tempArr.push({
-        text: text,
-        date: date
-      });
-    });
-
-    //trim down list's ID to match object property
-    var arrName = $(this)
-      .attr("id")
-      .replace("list-", "");
-
-    //update array on tasks object and save
-    tasks[arrName] = tempArr;
-    saveTasks();
-  }
-});
-
-$("#trash").droppable({
-  accept: ".card .list-group-item",
-  tolerance: "touch",
-  drop: function(event, ui) {
-    ui.draggable.remove();
-    console.log("over");
-  },
-  out: function(event, ui) {
-    console.log("out");
-  }
-});
-
-$("#modalDueDate").datepicker({
-  minDate: 1
-});
